@@ -21,10 +21,7 @@ const deliver = require('./delivery');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-//app.use(methodOverride('_method'));
 
-//app.set('views', path.join(__dirname, 'views'));
-//app.set('view engine', 'ejs');
 
 
 const mongoose = require('mongoose');
@@ -124,7 +121,7 @@ app.post('/login', async (req, res) => {
     res.header('x-auth-token', token).send(Users.id);
 });
 
-//3.ROUTE TO ADD A CONTACT
+// anyone authenticated can add an item inside our item inventory
 
 app.post('/additem',auth, async (req, res) => {
     
@@ -146,7 +143,7 @@ app.post('/additem',auth, async (req, res) => {
     if (Item) {
         return res.status(400).send('item already exisits!, try updating item instead');
     } else {
-        // Insert the new contact if they do not exist yet
+        
         Item = new item({
             name: req.body.name,
             category: req.body.category,
@@ -160,6 +157,7 @@ app.post('/additem',auth, async (req, res) => {
     }
 });
 
+//the customer adds to cart his required products from the item inventory
 app.post('/addtocart', [auth,customer], async function (req, res) {
 
     const cartschema = Joi.object({
@@ -196,6 +194,7 @@ app.post('/addtocart', [auth,customer], async function (req, res) {
     }
 })
 
+//only admin can see orders placed by customers, who then assigns it to delivery person
 app.get('/seeorders', [auth, admin], async function (req, res) {
     
     const x = await order.find({});
@@ -233,6 +232,7 @@ app.get('/me',auth,  async function (req, res) {
     const Users = await users.findById(req.Users._id).select('-password')
     res.send(Users);
 })
+//delivery person can change the status of the delivery of the item
 
 app.put('/changestatus/:id', [auth, deliver], async function (req, res) {
     let status = req.body.status
@@ -245,16 +245,6 @@ app.put('/changestatus/:id', [auth, deliver], async function (req, res) {
 })
 
 
-/*app.delete('/deletecontact/:name',auth, async (req, res) => {
-
-   
-        const Contact =await contact.findOneAndDelete({ name: req.params.name})
-    if (!Contact)
-        return res.status(404).send('not found contact')
-    else {
-        res.end("deleted succesfully")
-    }
-})*/
 
 
 app.listen(port, function (req, res) {
